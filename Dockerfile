@@ -15,7 +15,11 @@ RUN apk --no-cache add libxml2-dev libpng libjpeg-turbo freetype libpq libldap i
      && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql pgsql ldap intl xml soap opcache \
      && pecl install apcu \ && docker-php-ext-enable apcu \
      && apk del .build-deps 
-     
+
+# Install Nginx
+RUN apk --no-cache add nginx \
+    && mkdir -p /run/nginx
+
 # Download and install GLPI
 ENV GLPI_VERSION=10.0.7
 RUN curl -L -o /tmp/glpi.tar.gz "https://github.com/glpi-project/glpi/releases/download/$GLPI_VERSION/glpi-$GLPI_VERSION.tgz" \
@@ -26,7 +30,8 @@ RUN curl -L -o /tmp/glpi.tar.gz "https://github.com/glpi-project/glpi/releases/d
     && find /var/www/glpi -type d -exec chmod 770 {} +
 
 # Configure web server root directory to not allow non-public file access
-COPY glpi.conf /etc/apache2/conf.d/
+COPY glpi.conf /etc/nginx/conf.d/
+COPY nginx.conf /etc/nginx/
 
 # Set GLPI configuration options 
 COPY glpi-config.php /var/www/glpi/config/
@@ -37,5 +42,8 @@ RUN rm /var/www/glpi/install/install.php
 # Expose port 9000 for PHP-FPM
 EXPOSE 9000
 
-# Start PHP-FPM
-CMD ["php-fpm", "-F"]
+# Expose port 80 for Nginx
+EXPOSE 80
+
+# Start PHP-FPM and Nginx
+CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
