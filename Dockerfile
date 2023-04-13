@@ -1,50 +1,41 @@
-#Use Debian 11.3.
-FROM php:8.1.17-fpm-bullseye
+FROM php:8.0-fpm-alpine
 
-# LABEL org.opencontainers.image.authors="github@diouxx.be"
+LABEL org.opencontainers.image.authors="github@oneiric.com.au"
 
-#Don't prompt during installation.
-ENV DEBIAN_FRONTEND noninteractive
+# Set timezone 
+RUN apk --no-cache add tzdata \
+    && ln -sf /usr/share/zoneinfo/Australia/Sydney /etc/localtime \
+    && echo "Australia/Sydney" > /etc/timezone
+    
 
-#Installation of PHP 8.1.
-RUN apt-get update \ 
-&& apt-get -y install apt-transport-https lsb-release ca-certificates curl \
-# && curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg \ 
-# && sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
-&& apt-get update
+# Install dependencies 
+RUN apk --no-cache add libpng libjpeg-turbo freetype libpq libldap icu-libs \
+    && apk --no-cache add --virtual .build-deps $PHPIZE_DEPS libpng-dev libjpeg-turbo-dev freetype-dev libpq-dev libldap openldap-dev icu-dev \
+     && docker-php-ext-configure gd --with-freetype --with-jpeg \
+     && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql pgsql ldap intl xml soap opcache \
+     && pecl install apcu \ && docker-php-ext-enable apcu \
+     && apk del .build-deps 
+     
+# Download and install GLPI
+ENV GLPI_VERSION=10.0.7
+RUN curl -L -o /tmp/glpi.tar.gz "https://github.com/glpi-project/glpi/releases/download/$GLPI_VERSION/glpi-$GLPI_VERSION.tgz" \
+    && tar xfz /tmp/glpi.tar.gz -C /var/www/ \
+    && rm /tmp/glpi.tar.gz \
+    && chown -R www-data:www-data /var/www/glpi \
+    && chmod -R 750 /var/www/glpi \
+    && find /var/www/glpi -type d -exec chmod 770 {} +
 
-#Installation of Apache and PHP 8.1 with extensions.
-RUN apt install --yes --no-install-recommends \
-apache2 \
-# php8.1 \
-# php8.1-mysql \
-# php7.1-ldap \
-# php8.1-xmlrpc \
-# php8.1-imap \
-# php8.1-curl \
-# php7.1-gd \
-# php8.1-mbstring \
-# php8.1-xml \
-# php8.1-apcu-bc \
-# php-cas \
-# php8.1-intl \
-# php8.1-zip \
-# php8.1-bz2 \
-cron \
-wget \
-ca-certificates \
-jq \
-libldap-2.4-2 \
-libldap-common \
-libsasl2-2 \
-libsasl2-modules \
-libsasl2-modules-db \
-&& rm -rf /var/lib/apt/lists/*
+# Configure web server root directory to not allow non-public file access
+COPY glpi.conf /etc/apache2/conf.d/
 
-#Copying and running the script for the installation and initialization of GLPI.
-COPY glpi-start.sh /opt/
-RUN chmod +x /opt/glpi-start.sh
-ENTRYPOINT ["sh","/opt/glpi-start.sh"]
+# Set GLPI configuration options 
+COPY glpi-config.php /var/www/glpi/config/
 
-#Exposing ports.
-EXPOSE 80 443
+# Remove install.php
+RUN rm /var/www/glpi/install/install.php
+
+# Expose port 9000 for PHP-FPM
+EXPOSE 9000
+
+# Start PHP-FPM
+CMD ["php-fpm", "-F"]
