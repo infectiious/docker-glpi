@@ -24,5 +24,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/www/html/glpi/:/var/www/html/glpi
     environment:
-      - TIMEZONE=Europe/Brussels
+      - TIMEZONE=Australia/Sydney
+      - VERSION_GLPI=10.0.7
     restart: always
