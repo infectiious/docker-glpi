@@ -30,17 +30,17 @@ services:
 
 
  #Nginx Container 
-  nginx:
-    image: nginx:latest
-    depends_on:
-      - mariadb
-    container_name : glpi-nginx
-    hostname: nginx
-    ports:
-      - "8081:80"
-      - "4443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/glpi.conf:ro
-    environment:
-      - TIMEZONE=Australia/Sydney
-    restart: always
+  # nginx:
+  #   image: nginx:latest
+  #   depends_on:
+  #     - mariadb
+  #   container_name : glpi-nginx
+  #   hostname: nginx
+  #   ports:
+  #     - "8081:80"
+  #     - "4443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/conf.d/glpi.conf:ro
+  #   environment:
+  #     - TIMEZONE=Australia/Sydney
+  #   restart: always
