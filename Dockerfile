@@ -9,7 +9,7 @@ RUN apk --no-cache add tzdata \
     
 
 # Install dependencies 
-RUN apk --no-cache add libpng libjpeg-turbo freetype libpq libldap icu-libs libxml2 \
+RUN apk --no-cache add libxml2-dev libpng libjpeg-turbo freetype libpq libldap icu-libs \
     && apk --no-cache add --virtual .build-deps $PHPIZE_DEPS libpng-dev libjpeg-turbo-dev freetype-dev libpq-dev libldap openldap-dev icu-dev \
      && docker-php-ext-configure gd --with-freetype --with-jpeg \
      && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql pgsql ldap intl xml soap opcache \
