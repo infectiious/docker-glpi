@@ -42,7 +42,9 @@ echo "*/2 * * * * www-data /usr/bin/php /var/www/html/glpi/front/cron.php &>/dev
 service cron start
 
 #Activating the rewrite module of apache
-a2enmod rewrite && service apache2 restart && service apache2 stop
+a2enmod rewrite
+service apache2 restart
+service apache2 stop
 
 #Running the apache service in the foreground
 /usr/sbin/apache2ctl -D FOREGROUND
