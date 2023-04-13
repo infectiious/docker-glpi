@@ -1,8 +1,7 @@
 #!/bin/bash
 
 #Checking for the latest version.
-[[ ! "$VERSION_GLPI" ]] \
-	&& VERSION_GLPI=$(curl -s https://api.github.com/repos/glpi-project/glpi/releases/latest | grep tag_name | cut -d '"' -f 4)
+[[ ! "$VERSION_GLPI" ]] && VERSION_GLPI=$(curl -s https://api.github.com/repos/glpi-project/glpi/releases/latest | grep tag_name | cut -d '"' -f 4)
 
 if [[ -z "${TIMEZONE}" ]]; then echo "TIMEZONE is unset"; 
 else 
