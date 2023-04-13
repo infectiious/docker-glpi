@@ -45,7 +45,7 @@ libsasl2-modules-db \
 #Copying and running the script for the installation and initialization of GLPI.
 COPY glpi-start.sh /opt/
 RUN chmod +x /opt/glpi-start.sh
-ENTRYPOINT ["/opt/glpi-start.sh"]
+ENTRYPOINT ["sh","/opt/glpi-start.sh"]
 
 #Exposing ports.
 EXPOSE 80 443
