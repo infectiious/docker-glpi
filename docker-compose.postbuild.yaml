@@ -1,0 +1,46 @@
+---
+version: "3.2"
+
+services: 
+#MariaDB Container 
+  mariadb:
+    image: mariadb:10.7
+    container_name: glpi-mariadb
+    hostname: mariadb
+    volumes: 
+      - ./db:/var/lib/mysql
+    env_file: 
+      - ./mariadb.env
+    restart: always
+
+ #GLPI Container 
+  glpi: 
+    image: diouxx/glpi
+    depends_on:
+      - mariadb
+    container_name : glpi
+    hostname: glpi
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro 
+      - ./glpi:/var/www/html/glpi
+    environment:
+      - TIMEZONE=Australia/Sydney
+    restart: always 
+
+
+ #Nginx Container 
+  nginx:
+    image: nginx:latest
+    depends_on:
+      - mariadb
+    container_name : glpi-nginx
+    hostname: nginx
+    ports:
+      - "8081:80"
+      - "4443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/glpi.conf:ro
+    environment:
+      - TIMEZONE=Australia/Sydney
+    restart: always

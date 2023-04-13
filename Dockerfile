@@ -26,7 +26,7 @@ php8.1-curl \
 php7.1-gd \
 php8.1-mbstring \
 php8.1-xml \
-php8.1-apcu-bc \
+# php8.1-apcu-bc \
 php-cas \
 php8.1-intl \
 php8.1-zip \
